@@ -21,7 +21,7 @@ class PositionerValue(object):
     def json_decoder(obj):
         if obj is not None:
             return PositionerValue(
-                timestamp=obj["timestamp"],
+                timestamp=obj["t"],
                 x=obj["x"],
                 y=obj["y"],
                 z=obj["z"],
