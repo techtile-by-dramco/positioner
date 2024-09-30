@@ -82,18 +82,17 @@ class PositionerClient:
 
     def get_data(self) -> PositionerValue:
         # return last position if its fresh enough or if its changed
-        if self.last_position is None:
-            return None
+        # if self.last_position is None:
+        #     return None
 
-        if self.last_sent is None:
-            self.last_sent = self.last_position
-            return self.last_position
+        # if self.last_sent is None:
+        #     self.last_sent = self.last_position
+        #     return self.last_position
 
-        if self.last_sent is not self.last_position:
-            self.last_sent = self.last_position
-            return self.last_position
-
-        return None
+        # if self.last_sent is not self.last_position:
+        #     self.last_sent = self.last_position
+        #     return self.last_position
+        return self.last_position
 
     def subscribe_and_process(self):
         while not self.stop_flag.is_set():
