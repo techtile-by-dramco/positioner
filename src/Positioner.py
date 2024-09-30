@@ -75,7 +75,7 @@ class PositionerClient:
         self.context.term()
 
         #   Confirm with sending a message to the user
-        print("Energy profiler thread successfully terminated.")
+        print("Positioner thread successfully terminated.")
 
     def get_data(self) -> PositionerValue:
         # return last position if its fresh enough or if its changed
@@ -102,4 +102,4 @@ class PositionerClient:
                 )
             except zmq.error.Again as e:
                 # Handle timeout error
-                print("EP Thread: Socket receive timed out:", e)
+                print("Positioner Thread: Socket receive timed out:", e)
