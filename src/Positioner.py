@@ -11,10 +11,10 @@ class PositionerValue(object):
     """
 
     def __init__(self, timestamp, x, y, z, rotation_matrix=None):
-        self.timestamp = timestamp
-        self.x_pos = x
-        self.y_pos = y
-        self.z_pos = z
+        self.t = timestamp
+        self.x = x
+        self.y = y
+        self.z = z
         self.rotation_matrix = rotation_matrix
 
     @staticmethod
@@ -32,7 +32,10 @@ class PositionerValue(object):
         # TODO check when will be say the vals are equal
         if not isinstance(other, PositionerValue):
             return False
-        return self.timestamp == other.timestamp
+        return self.t == other.t
+
+    def __str__(self):
+        return f"({self.x},{self.y},{self.z}) @ t={self.t}s"
 
 
 class PositionerClient:
