@@ -1,6 +1,17 @@
 import zmq
 import threading
 import json
+import numpy as np
+
+class PositionerValues(object):
+    def __init__(self, arr):
+        self.values = arr
+
+    def get_x_positions(self):
+        return np.asarray([pos.x for pos in self.values])
+
+    def get_y_positions(self):
+        return np.asarray([pos.y for pos in self.values])
 
 
 class PositionerValue(object):
