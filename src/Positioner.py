@@ -16,6 +16,9 @@ class PositionerValues(object):
     def get_y_positions(self):
         return np.asarray([pos.y for pos in self.values])
 
+    def get_z_positions(self):
+        return np.asarray([pos.z for pos in self.values])
+
 
 class PositionerValue(object):
     """Class that contains all the positioner data, ie x,y,z, time and rotation matrix
