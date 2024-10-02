@@ -72,6 +72,7 @@ class PositionerValue(object):
 
 
 class PositionerClient:
+    #todo allow to specify backend (ZMQ or direct)
     def __init__(self, config: dict) -> None:
         ip = config["ip"]
         port = config["port"]
