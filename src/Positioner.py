@@ -4,8 +4,11 @@ import json
 import numpy as np
 
 class PositionerValues(object):
-    def __init__(self, arr):
+    def __init__(self, arr=None):
         self.values = arr
+
+    def load(self, file:str):
+        self.values = np.load(file, allow_pickle=True)
 
     def get_x_positions(self):
         return np.asarray([pos.x for pos in self.values])
