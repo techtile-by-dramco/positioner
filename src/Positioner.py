@@ -7,8 +7,15 @@ class PositionerValues(object):
     def __init__(self, arr=None):
         self.values = arr
 
-    def load(self, file:str):
+    def load_file(self, file:str):
         self.values = np.load(file, allow_pickle=True)
+
+    @staticmethod
+    def from_xyz(x,y,z):
+        # todo allow to include time and rotation matrix
+
+        arr = np.asarray([PositionerValue(-1.0, _x, _y, _z, None) for _x, _y, _z in zip(x,y,z)])
+        return PositionerValues(arr)
 
     def get_x_positions(self):
         return np.asarray([pos.x for pos in self.values])
@@ -18,6 +25,15 @@ class PositionerValues(object):
 
     def get_z_positions(self):
         return np.asarray([pos.z for pos in self.values])
+
+    def reduce_to_grid_size(self, size=0.1) -> PositionerValues:
+        x_rounded = np.round(self.get_x_positions() / size) * size
+        y_rounded = np.round(self.get_y_positions() / size) * size
+        z_rounded = np.round(self.get_z_positions() / size) * size
+
+        # todo allow to include time and rotation matrix
+
+        return PositionerValues.from_xyz(x_rounded, y_rounded, z_rounded)
 
 
 class PositionerValue(object):
