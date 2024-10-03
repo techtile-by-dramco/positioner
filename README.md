@@ -28,13 +28,27 @@ cd positioner
 pip install --editable .
 ```
 
+or 
+
+```sh
+pip install git+https://github.com/techtile-by-dramco/positioner
+```
+
 ## Update package
 
+If it needs to be editable:
 ```sh
 cd positioner
 git pull
 pip install --upgrade pip
 pip install --editable .
+```
+or 
+
+If you just want to use the lib:
+
+```sh
+pip install git+https://github.com/techtile-by-dramco/positioner -u
 ```
 
 ## Running example
