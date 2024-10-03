@@ -82,6 +82,10 @@ class PositionerValue(object):
         self.rotation_matrix = rotation_matrix
 
     @staticmethod
+    def load_from_dict(val):
+        return PositionerValue(val["t"], val["x"], val["y"], val["z"], val["rotation_matrix"])
+    
+    @staticmethod
     def json_decoder(obj):
         if obj is not None:
             return PositionerValue(
@@ -287,7 +291,9 @@ class PositionerClient:
         if self.backend == "direct":
             self.get_Qualisys_Position(self.wanted_body, self.capture_time_per_pos)
             # Average positioning data recorded with Qualisys in given timeframe
-            self.last_position = self.average_qualisys_data()
+            self.last_position = PositionerValue.load_from_dict(
+                self.average_qualisys_data()
+            )
 
         return self.last_position
 
