@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 
 import numpy as np
-import qtm-rt
+import qtm-rt as qtm
 import samplerate
 import zmq
 from dotenv import load_dotenv
