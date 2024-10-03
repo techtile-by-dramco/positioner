@@ -4,8 +4,10 @@
 
 ```python
 from Positioner import PositionerClient
+import yaml
 
-positioner = PositionerClient(config)
+config = yaml.safe_load(("config.yml")
+positioner = PositionerClient(config, backend="direct")
 
 positioner.start()
 position = positioner.get_data()
