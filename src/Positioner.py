@@ -6,6 +6,7 @@ import tempfile
 import threading
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
+from collections import defaultdict
 
 import numpy as np
 import qtm_rt as qtm
@@ -57,7 +58,12 @@ class PositionerValues(object):
     def get_z_positions(self):
         return np.asarray([pos.z for pos in self.values])
 
+    def get_coords(self):
+        return np.asarray([(pos.x,pos.y,pos.z) for pos in self.values])
+
     def reduce_to_grid_size(self, size=0.1):
+
+        """ This effectively quantizes the position """
         x_rounded = np.round(self.get_x_positions() / size) * size
         y_rounded = np.round(self.get_y_positions() / size) * size
         z_rounded = np.round(self.get_z_positions() / size) * size
@@ -66,6 +72,58 @@ class PositionerValues(object):
 
         return PositionerValues.from_xyz(x_rounded, y_rounded, z_rounded)
 
+
+    def align_values_based_on_positions(self, other, val_self, val_other, grid_size=0.1, average=True):
+        #TODO assumes we can average the values at same position
+        coords, aligned_idx1, aligned_idx1 = align_positions(self, other, grid_size=grid_size)
+
+        val_self = np.asarray(val_self)
+        val_other = np.asarray(val_other)
+
+        avg_val1 = []
+        avg_val2 = []
+
+        for idx1, idx2, c in zip(aligned_idx1,aligned_idx1, coords):
+            avg_val1.append(np.mean(val_self[idx1]))
+            avg_val2.append(np.mean(val_self[idx2]))
+
+        return coords, avg_val1, avg_val2
+
+    
+    def align_positions(self, other, grid_size=0.1):
+        coords1 = self.reduce_to_grid_size(grid_size)
+        coords2 = other.reduce_to_grid_size(grid_size)
+
+        multimap1 = defaultdict(list)
+        multimap2 = defaultdict(list)
+
+        # Populate multimap1 with quantized coordinates and indices from array1
+        for i, coord in enumerate(coords1):
+            multimap1[tuple(coord)].append(i)
+
+        # Populate multimap2 with quantized coordinates and indices from array2
+        for i, coord in enumerate(coords2):
+            multimap2[tuple(coord)].append(i)
+
+        # Find matching quantized coordinates (within precision) and align values
+        coords = []
+        aligned_idx1 = []
+        aligned_idx2 = []
+
+        for coord in set(multimap1.keys()).intersection(set(multimap2.keys())):
+            coords.append(coords)
+
+            indices1 = multimap1[coord]
+            indices2 = multimap2[coord]
+
+            # Pair values based on matching quantized coordinates
+            for idx1, idx2 in zip(indices1, indices2):
+                aligned_idx1.append(idx1)
+                aligned_idx2.append(idx2)
+
+        # aligned_idx1[i] contqins the array of indices of self assocoiated to coords[i]
+        # aligned_idx1[i] contqins the array of indices of other assocoiated to coords[i]
+        return coords, aligned_idx1, aligned_idx2
 
 class PositionerValue(object):
     """Class that contains all the positioner data, ie x,y,z, time and rotation matrix
