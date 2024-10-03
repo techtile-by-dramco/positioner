@@ -22,6 +22,9 @@ classifiers = [
 dependencies = [
   'numpy',
   'pyzmq',
+  'samplerate',
+  'qtm',
+  
 ]
 
 [project.urls]
