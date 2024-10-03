@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 
 import numpy as np
-import qtm
+import qtm-rt
 import samplerate
 import zmq
 from dotenv import load_dotenv
@@ -145,7 +145,7 @@ class PositionerClient:
         # Optionally, you can print the path to verify it's loading from the correct directory
         print(f".env loaded from: {dotenv_path}")
 
-    # TODO check if possible in class
+
     async def main_async(self, wanted_body, measuring_time):
         # Connect to qtm
         connection = await qtm.connect(self.ip) 
