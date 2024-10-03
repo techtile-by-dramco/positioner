@@ -33,7 +33,7 @@ class PositionerValues(object):
     def get_z_positions(self):
         return np.asarray([pos.z for pos in self.values])
 
-    def reduce_to_grid_size(self, size=0.1) -> PositionerValues:
+    def reduce_to_grid_size(self, size=0.1):
         x_rounded = np.round(self.get_x_positions() / size) * size
         y_rounded = np.round(self.get_y_positions() / size) * size
         z_rounded = np.round(self.get_z_positions() / size) * size
