@@ -78,18 +78,19 @@ class PositionerValue(object):
 
 
 class PositionerClient:
-    #todo allow to specify backend (ZMQ or direct)
+    # todo allow to specify backend (ZMQ or direct)
     def __init__(self, config: dict, backend="direct") -> None:
-        #TODO backend specify in config or as extra param?
-        #TODO replace backend str by enum
+        # TODO backend specify in config or as extra param?
+        # TODO replace backend str by enum
 
         self.ip = config["ip"]
         self.port = config["port"]
         self.backend = backend
+        self.wanted_body = config["wanted_body"]
         if backend == "zmq":
             self.context = zmq.Context()
             self.socket = self.context.socket(zmq.SUB)
-            self.socket.connect(f"tcp://{ip}:{port}")
+            self.socket.connect(f"tcp://{self.ip}:{self.port}")
             self.socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
             #   Set timeout
@@ -104,7 +105,22 @@ class PositionerClient:
         self.last_sent = None
         self._thr = None
 
-    #TODO check if possible in class
+    @staticmethod
+    def create_body_index(xml_string):
+        """Extract a name to index dictionary from 6dof settings xml"""
+        xml = ET.fromstring(xml_string)
+
+        body_to_index = {}
+        for index, body in enumerate(xml.findall("*/Body/Name")):
+            body_to_index[body.text.strip()] = index
+
+        return body_to_index
+
+    @staticmethod
+    def check_NaN(position, rotation):
+        return np.isnan(float(position[0]))
+
+    # TODO check if possible in class
     async def main_async(self, wanted_body, measuring_time):
         # Connect to qtm
         connection = await qtm.connect(self.ip) 
@@ -120,7 +136,7 @@ class PositionerClient:
 
         # Get 6dof settings from qtm
         xml_string = await connection.get_parameters(parameters=["6d"])
-        body_index = create_body_index(xml_string)
+        body_index = PositionerClient.create_body_index(xml_string)
 
         temp_data = []
         def on_packet(packet):
@@ -134,7 +150,7 @@ class PositionerClient:
                 wanted_index = body_index[wanted_body]
                 position, rotation = bodies[wanted_index]
 
-                if not check_NaN(position, rotation):
+                if not PositionerClient.check_NaN(position, rotation):
                     data = dict(t=now.strftime("%H:%M:%S"),
                                 x=position[0] / 1000,  # x-position in [m]
                                 y=position[1] / 1000,  # y-position in [m]
@@ -159,12 +175,12 @@ class PositionerClient:
         # Stop streaming
         await connection.stream_frames_stop()
 
-
     def get_Qualisys_Position(self, wanted_body, measuring_time):
-        asyncio.get_event_loop().run_until_complete(main_async(self, wanted_body, measuring_time))
+        asyncio.get_event_loop().run_until_complete(self.main_async(wanted_body, measuring_time))
 
     @staticmethod
-    def average_qualisys_data(data_list):
+    def average_qualisys_data():
+        data_list = np.load("temp_data_qualisys\\temp_data_qualisys.npy")
         n = len(data_list)
 
         # Sum all values using list comprehensions and NumPy for the rotation matrix
@@ -181,7 +197,7 @@ class PositionerClient:
         avg_time = time_sum / n  # Average timedelta
 
         # Convert average timedelta back to HH:MM:SS format
-        avg_time_str = str(avg_time).split('.')[0]  # Remove microseconds
+        avg_time_str = str(avg_time).split(".", maxsplit=1)[0]  # Remove microseconds
 
         # Sum and average rotation matrices
         rotation_matrix_avg = sum(np.array(data['rotation_matrix']) for data in data_list) / n
@@ -231,10 +247,10 @@ class PositionerClient:
         #     self.last_sent = self.last_position
         #     return self.last_position
 
-        if backend == "direct":
-            position_qualisys_record = self.get_Qualisys_Position('Name_Body', 0.03)
+        if self.backend == "direct":
+            self.get_Qualisys_Position(self.wanted_body, 0.03)
             # Average positioning data recorded with Qualisys in given timeframe
-            self.last_position = PositionerClient.average_qualisys_data(position_qualisys_record)
+            self.last_position = PositionerClient.average_qualisys_data()
 
         return self.last_position
 
