@@ -23,7 +23,7 @@ dependencies = [
   'numpy',
   'pyzmq',
   'samplerate',
-  'qtm',
+  'qtm-rt',
   'python-dotenv'
 ]
 
