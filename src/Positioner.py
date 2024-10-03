@@ -177,7 +177,7 @@ class PositionerClient:
             now = datetime.now()
 
             if wanted_body is not None and wanted_body in body_index:
-                print("Qualisys: BODY FOUND")
+                # print("Qualisys: BODY FOUND")
                 # Extract one specific body
                 wanted_index = body_index[wanted_body]
                 position, rotation = bodies[wanted_index]
@@ -211,7 +211,7 @@ class PositionerClient:
         asyncio.get_event_loop().run_until_complete(self.main_async(wanted_body, measuring_time))
 
     def average_qualisys_data(self):
-        data_list = np.load(self.temp_path)
+        data_list = np.load(self.temp_path, allow_pickle=True)
         n = len(data_list)
 
         # Sum all values using list comprehensions and NumPy for the rotation matrix
