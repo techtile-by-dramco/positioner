@@ -1,13 +1,14 @@
-import zmq
-import threading
-import json
-import numpy as np
-import numpy as np
-from datetime import datetime, timedelta
-import xml.etree.ElementTree as ET
-import samplerate
 import asyncio
+import json
+import threading
+import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta
+
+import numpy as np
 import qtm
+import samplerate
+import zmq
+
 
 class PositionerValues(object):
     def __init__(self, arr=None):
