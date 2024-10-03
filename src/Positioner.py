@@ -12,6 +12,8 @@ import qtm_rt as qtm
 import samplerate
 import zmq
 from dotenv import load_dotenv
+import logging 
+
 
 # Get the frame of the calling script (main.py)
 caller_frame = inspect.stack()[-1]
@@ -120,6 +122,8 @@ class PositionerClient:
                 zmq.RCVTIMEO, 1000
             )  # Timeout after 1 second (1000 milliseconds)
         elif backend == "direct":
+            # change logger level
+            logging.getLogger("qtm_rt").setLevel(logging.WARNING)
             self.capture_time_per_pos = config["capture_time_per_pos"]
         #   Define a shared 'stop' flag to control the thread
         self.stop_flag = threading.Event()
@@ -142,7 +146,6 @@ class PositionerClient:
     @staticmethod
     def check_NaN(position, rotation):
         return np.isnan(float(position[0]))
-
 
     async def main_async(self, wanted_body, measuring_time):
         # Connect to qtm
