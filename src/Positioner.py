@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import json
 import os
 import tempfile
@@ -11,8 +12,6 @@ import qtm
 import samplerate
 import zmq
 from dotenv import load_dotenv
-
-load_dotenv()
 
 
 class PositionerValues(object):
@@ -126,6 +125,26 @@ class PositionerClient:
     def check_NaN(position, rotation):
         return np.isnan(float(position[0]))
 
+    @staticmethod
+    def load_env():
+        # Get the frame of the calling script (main.py)
+        caller_frame = inspect.stack()[-1]
+
+        # Get the file path of the script that invoked the library (main.py)
+        main_file_path = caller_frame.filename
+
+        # Extract the directory of the calling script (main.py's directory)
+        main_dir = os.path.dirname(os.path.abspath(main_file_path))
+
+        # Construct the path to the .env file located in the main script's directory
+        dotenv_path = os.path.join(main_dir, '.env')
+
+        # Load the .env file
+        load_dotenv(dotenv_path)
+
+        # Optionally, you can print the path to verify it's loading from the correct directory
+        print(f".env loaded from: {dotenv_path}")
+
     # TODO check if possible in class
     async def main_async(self, wanted_body, measuring_time):
         # Connect to qtm
@@ -137,6 +156,7 @@ class PositionerClient:
             return
 
         # Take control of qtm, context manager will automatically release control after scope end
+        PositionerClient.load_env()
         pwd = os.getenv("QUALYSIS_KEY")
         if pwd is None:
             print("QUALYSIS_KEY is not set in the environment")
