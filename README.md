@@ -1,5 +1,8 @@
 # Techtile Scope
 
+MAke sure to create a '.env' file in the main folder and include the Qualysis key:
+`QUALYSIS_KEY="<PWD>"`
+
 ## Interface
 
 ```python
@@ -7,7 +10,7 @@ from Positioner import PositionerClient
 import yaml
 
 config = yaml.safe_load(("config.yml")
-positioner = PositionerClient(config, backend="direct")
+positioner = PositionerClient(config, backend="direct") # or backend="zmq"
 
 positioner.start()
 position = positioner.get_data()
