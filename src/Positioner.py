@@ -9,6 +9,11 @@ import qtm
 import samplerate
 import zmq
 
+from dotenv import load_dotenv
+
+import os
+load_dotenv()
+
 
 class PositionerValues(object):
     def __init__(self, arr=None):
@@ -131,7 +136,12 @@ class PositionerClient:
             return
 
         # Take control of qtm, context manager will automatically release control after scope end
-        async with qtm.TakeControl(connection, "PW"):  #ENTER PW
+        pwd = os.getenv("QUALYSIS_KEY")
+        if pwd is None:
+            print("QUALYSIS_KEY is not set in the environment")
+            return
+
+        async with qtm.TakeControl(connection, pwd):  # ENTER PW
             await connection.new()
 
         # Get 6dof settings from qtm
