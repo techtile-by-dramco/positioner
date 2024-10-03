@@ -24,8 +24,7 @@ dependencies = [
   'pyzmq',
   'samplerate',
   'qtm',
-  'dotenv'
-
+  'python-dotenv'
 ]
 
 [project.urls]
