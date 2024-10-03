@@ -1,5 +1,7 @@
 import asyncio
 import json
+import os
+import tempfile
 import threading
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
@@ -8,10 +10,8 @@ import numpy as np
 import qtm
 import samplerate
 import zmq
-
 from dotenv import load_dotenv
 
-import os
 load_dotenv()
 
 
@@ -102,7 +102,8 @@ class PositionerClient:
             self.socket.setsockopt(
                 zmq.RCVTIMEO, 1000
             )  # Timeout after 1 second (1000 milliseconds)
-
+        elif backend == "direct":
+            self.capture_time_per_pos = config["capture_time_per_pos"]
         #   Define a shared 'stop' flag to control the thread
         self.stop_flag = threading.Event()
 
@@ -168,7 +169,7 @@ class PositionerClient:
                                 rotation_matrix=rotation[0])
 
                     temp_data.append(data)
-                    np.save('temp_data_qualisys\\temp_data_qualisys.npy', temp_data)
+                    np.save(self.temp_path, temp_data)
 
                 else:
                     print('Qualisys: No object detected')
@@ -188,9 +189,8 @@ class PositionerClient:
     def get_Qualisys_Position(self, wanted_body, measuring_time):
         asyncio.get_event_loop().run_until_complete(self.main_async(wanted_body, measuring_time))
 
-    @staticmethod
-    def average_qualisys_data():
-        data_list = np.load("temp_data_qualisys\\temp_data_qualisys.npy")
+    def average_qualisys_data(self):
+        data_list = np.load(self.temp_path)
         n = len(data_list)
 
         # Sum all values using list comprehensions and NumPy for the rotation matrix
@@ -228,6 +228,10 @@ class PositionerClient:
 
             #   Start thread
             self._thr.start()
+        elif self.backend == "direct":
+            # create temp dir to hold temp numpy vals
+            self.temp_dir = tempfile.TemporaryDirectory()
+            self.temp_path = os.path.join(self.temp_dir.name, "temp_data_qualisys.npy")
 
     def stop(self):
         if self.backend == "zmq":
@@ -240,9 +244,10 @@ class PositionerClient:
             #   Close ZMQ socket
             self.socket.close()
             self.context.term()
-
-            #   Confirm with sending a message to the user
-            print("Positioner thread successfully terminated.")
+        elif self.backend == "direct":
+            self.temp_dir.cleanup()
+        #   Confirm with sending a message to the user
+        print("Positioner thread successfully terminated.")
 
     def get_data(self) -> PositionerValue:
         # return last position if its fresh enough or if its changed
@@ -258,9 +263,9 @@ class PositionerClient:
         #     return self.last_position
 
         if self.backend == "direct":
-            self.get_Qualisys_Position(self.wanted_body, 0.03)
+            self.get_Qualisys_Position(self.wanted_body, self.capture_time_per_pos)
             # Average positioning data recorded with Qualisys in given timeframe
-            self.last_position = PositionerClient.average_qualisys_data()
+            self.last_position = self.average_qualisys_data()
 
         return self.last_position
 
