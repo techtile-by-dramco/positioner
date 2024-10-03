@@ -157,6 +157,7 @@ class PositionerClient:
             now = datetime.now()
 
             if wanted_body is not None and wanted_body in body_index:
+                print("Qualisys: BODY FOUND")
                 # Extract one specific body
                 wanted_index = body_index[wanted_body]
                 position, rotation = bodies[wanted_index]
