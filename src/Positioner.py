@@ -78,7 +78,6 @@ class PositionerValue(object):
 
 
 class PositionerClient:
-    # todo allow to specify backend (ZMQ or direct)
     def __init__(self, config: dict, backend="direct") -> None:
         # TODO backend specify in config or as extra param?
         # TODO replace backend str by enum
