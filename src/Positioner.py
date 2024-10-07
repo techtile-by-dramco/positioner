@@ -49,6 +49,9 @@ class PositionerValues(object):
         arr = np.asarray([PositionerValue(-1.0, _x, _y, _z, None) for _x, _y, _z in zip(x,y,z)])
         return PositionerValues(arr)
 
+    def get_positions(self):
+        return self.values
+
     def get_x_positions(self):
         return np.asarray([pos.x for pos in self.values])
 
@@ -72,10 +75,23 @@ class PositionerValues(object):
 
         return PositionerValues.from_xyz(x_rounded, y_rounded, z_rounded)
 
+    # def as_heatmap(self, grid_size, plane="xy"):
+    #     assert plane == "xy", "Only XY plane is supported now"
+
+    #     grid_pos_ids, xi, yi = self.group_in_grids(grid_size)
+
+    #     heatmap = np.zeros(shape=(len(yi, xi)))
+
+    #     for i_x, grid_along_y in enumerate(grid_pos_ids):
+    #         for i_y, grid_along_xy_ids in enumerate(grid_along_x):
+                
+    #             for _id in grid_along_xy_ids:
+
+                
 
     def align_values_based_on_positions(self, other, val_self, val_other, grid_size=0.1, average=True):
-        #TODO assumes we can average the values at same position
-        coords, aligned_idx1, aligned_idx1 = align_positions(self, other, grid_size=grid_size)
+        # TODO assumes we can average the values at same position
+        coords, aligned_idx1, aligned_idx1 = self.align_positions(other, grid_size=grid_size)
 
         val_self = np.asarray(val_self)
         val_other = np.asarray(val_other)
@@ -89,7 +105,41 @@ class PositionerValues(object):
 
         return coords, avg_val1, avg_val2
 
-    
+    def group_in_grids(self, grid_size):
+        #TODO extend with z-dimension
+        """_summary_
+
+        Args:
+            grid_size (_type_): _description_
+
+        Returns:
+            grid_pos_ids: is a matrix containing the coordinate indices for that grid cell
+            xi: labels for x dimension
+            yi: labels for y dimension
+        """
+        coords = self.reduce_to_grid_size(grid_size)
+
+        x = coords.get_x_positions()
+        y = coords.get_y_positions()
+
+        # Create a grid with the specified grid size
+        xi = np.arange(min(x), max(x), grid_size)
+        yi = np.arange(min(y), max(y), grid_size)
+
+        grid_pos_ids = [[[] for _ in range(len(xi))] for _ in range(len(yi))]
+
+        for i_grid_x, grid_x in enumerate(xi):
+            for i_grid_y, grid_y in enumerate(yi):
+                for coord_id, coord in enumerate(coords.get_positions()):
+                    # if coord inside of grid, add to list
+                    if (
+                        grid_x <= coord.x < grid_x + grid_size
+                        and grid_y <= coord.y < grid_y + grid_size
+                    ):
+                        grid_pos_ids[i_grid_y][i_grid_x].append(coord_id)
+
+        return grid_pos_ids, xi, yi
+
     def align_positions(self, other, grid_size=0.1):
         coords1 = self.reduce_to_grid_size(grid_size)
         coords2 = other.reduce_to_grid_size(grid_size)
