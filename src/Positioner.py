@@ -192,7 +192,7 @@ class PositionerValue(object):
     @staticmethod
     def load_from_dict(val):
         return PositionerValue(val["t"], val["x"], val["y"], val["z"], val["rotation_matrix"])
-    
+
     @staticmethod
     def json_decoder(obj):
         if obj is not None:
@@ -211,7 +211,7 @@ class PositionerValue(object):
         return self.t == other.t
 
     def __str__(self):
-        return f"({self.x},{self.y},{self.z}) @ t={self.t}s"
+        return f"({self.x:.2f},{self.y:.2f},{self.z:.2f}) @ t={self.t}s"
 
 
 class PositionerClient:
