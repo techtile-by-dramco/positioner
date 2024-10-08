@@ -84,10 +84,8 @@ class PositionerValues(object):
 
     #     for i_x, grid_along_y in enumerate(grid_pos_ids):
     #         for i_y, grid_along_xy_ids in enumerate(grid_along_x):
-                
-    #             for _id in grid_along_xy_ids:
 
-                
+    #             for _id in grid_along_xy_ids:
 
     def align_values_based_on_positions(self, other, val_self, val_other, grid_size=0.1, average=True):
         # TODO assumes we can average the values at same position
@@ -106,7 +104,7 @@ class PositionerValues(object):
         return coords, avg_val1, avg_val2
 
     def group_in_grids(self, grid_size):
-        #TODO extend with z-dimension
+        # TODO extend with z-dimension
         """_summary_
 
         Args:
@@ -117,10 +115,10 @@ class PositionerValues(object):
             xi: labels for x dimension
             yi: labels for y dimension
         """
-        coords = self.reduce_to_grid_size(grid_size)
+        # coords = self.reduce_to_grid_size(grid_size)
 
-        x = coords.get_x_positions()
-        y = coords.get_y_positions()
+        x = self.get_x_positions()
+        y = self.get_y_positions()
 
         # Create a grid with the specified grid size
         xi = np.arange(min(x), max(x), grid_size)
@@ -130,7 +128,7 @@ class PositionerValues(object):
 
         for i_grid_x, grid_x in enumerate(xi):
             for i_grid_y, grid_y in enumerate(yi):
-                for coord_id, coord in enumerate(coords.get_positions()):
+                for coord_id, coord in enumerate(self.get_positions()):
                     # if coord inside of grid, add to list
                     if (
                         grid_x <= coord.x < grid_x + grid_size
