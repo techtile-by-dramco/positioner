@@ -103,7 +103,7 @@ class PositionerValues(object):
 
         return coords, avg_val1, avg_val2
 
-    def group_in_grids(self, grid_size):
+    def group_in_grids(self, grid_size, min_x=None, min_y=None, max_x=None, max_y=None):
         # TODO extend with z-dimension
         """_summary_
 
@@ -121,8 +121,14 @@ class PositionerValues(object):
         y = self.get_y_positions()
 
         # Create a grid with the specified grid size
-        xi = np.arange(min(x), max(x), grid_size)
-        yi = np.arange(min(y), max(y), grid_size)
+        _min_x = min(x) if min_x is None else min_x
+        _min_y = min(y) if min_y is None else min_y
+
+        _max_x = max(x) if max_x is None else max_x
+        _max_y = max(y) if max_y is None else max_y
+
+        xi = np.arange(_min_x, _max_x, grid_size)
+        yi = np.arange(_min_y, _max_y, grid_size)
 
         grid_pos_ids = [[[] for _ in range(len(xi))] for _ in range(len(yi))]
 
