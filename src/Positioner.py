@@ -209,7 +209,7 @@ class PositionerValue(object):
             )
     
     def get_coords(self):
-        return [self.x, self.y, self.z]
+        return np.asarray([self.x, self.y, self.z])
 
     def is_closer_than(self, other, distance):
         return np.linalg.norm(self.get_coords()-other.get_coords()) <= distance
