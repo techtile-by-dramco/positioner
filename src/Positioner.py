@@ -207,6 +207,12 @@ class PositionerValue(object):
                 z=obj["z"],
                 # TODO add rotation matrix
             )
+    
+    def get_coords(self):
+        return [self.x, self.y, self.z]
+
+    def is_closer_than(self, other, distance):
+        return np.linalg.norm(self.get_coords()-other.get_coords()) <= distance
 
     def __eq__(self, other: object) -> bool:
         # TODO check when will be say the vals are equal
