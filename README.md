@@ -9,7 +9,7 @@ MAke sure to create a '.env' file in the main folder and include the Qualysis ke
 from Positioner import PositionerClient
 import yaml
 
-config = yaml.safe_load(("config.yml")
+config = yaml.safe_load("config.yml")
 positioner = PositionerClient(config, backend="direct") # or backend="zmq"
 
 positioner.start()
