@@ -324,11 +324,12 @@ class PositionerClient:
         # Start streaming frames
         await connection.stream_frames(components=["6d"], on_packet=on_packet)
 
-        # Wait asynchronously some time
-        await asyncio.sleep(measuring_time)
-
-        # Stop streaming
-        await connection.stream_frames_stop()
+        try:
+            await asyncio.sleep(measuring_time)
+        finally:
+            await connection.stream_frames_stop()
+            if connection is not None:
+                connection.disconnect()
 
     def get_Qualisys_Position(self, wanted_body, measuring_time):
         asyncio.get_event_loop().run_until_complete(self.main_async(wanted_body, measuring_time))
