@@ -5,11 +5,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "techtile_positioner"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
   { name="Gilles Callebaut"},
   { name="Daan Delabie"},
-   { name="Jarne Van Mulders"},
+  { name="Jarne Van Mulders"},
 ]
 description = "Techtile Positioner package"
 readme = "README.md"
@@ -22,7 +22,6 @@ classifiers = [
 dependencies = [
   'numpy',
   'pyzmq',
-  'samplerate',
   'qtm-rt',
   'python-dotenv'
 ]

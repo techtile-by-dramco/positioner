@@ -10,7 +10,6 @@ from collections import defaultdict
 
 import numpy as np
 import qtm_rt as qtm
-import samplerate
 import zmq
 from dotenv import load_dotenv
 import logging 
@@ -225,7 +224,7 @@ class PositionerValue(object):
 
 
 class PositionerClient:
-    def __init__(self, config: dict, backend="direct") -> None:
+    def __init__(self, config: dict, backend="direct", filter=None, filter_ttl_seconds=None) -> None:
         # TODO backend specify in config or as extra param?
         # TODO replace backend str by enum
 
@@ -233,6 +232,12 @@ class PositionerClient:
         self.port = config["port"]
         self.backend = backend
         self.wanted_body = config["wanted_body"]
+        self.filter = filter
+        self.filter_ttl_seconds = (
+            filter_ttl_seconds
+            if filter_ttl_seconds is not None
+            else config.get("filter_ttl_seconds") or config.get("filter_ttl")
+        )
         if backend == "zmq":
             self.context = zmq.Context()
             self.socket = self.context.socket(zmq.SUB)
@@ -253,6 +258,8 @@ class PositionerClient:
         self.last_position = None
         self.last_sent = None
         self._thr = None
+        self._last_update_ts = None
+        self._missing_ttl_warning_logged = False
 
     @staticmethod
     def create_body_index(xml_string):
@@ -394,6 +401,30 @@ class PositionerClient:
         #   Confirm with sending a message to the user
         print("Positioner thread successfully terminated.")
 
+    def _update_last_position(self, position: PositionerValue):
+        self.last_position = position
+        self._last_update_ts = datetime.now()
+
+    def _apply_filter(self, position: PositionerValue):
+        if position is None:
+            return None
+
+        if self.filter == "filter_ttl":
+            if self.filter_ttl_seconds is None:
+                if not self._missing_ttl_warning_logged:
+                    logging.warning("filter_ttl selected but filter_ttl_seconds is not set; skipping TTL filter")
+                    self._missing_ttl_warning_logged = True
+                return position
+
+            if self._last_update_ts is None:
+                return None
+
+            age_seconds = (datetime.now() - self._last_update_ts).total_seconds()
+            if age_seconds > self.filter_ttl_seconds:
+                return None
+
+        return position
+
     def get_data(self) -> PositionerValue:
         # return last position if its fresh enough or if its changed
         # if self.last_position is None:
@@ -410,19 +441,19 @@ class PositionerClient:
         if self.backend == "direct":
             self.get_Qualisys_Position(self.wanted_body, self.capture_time_per_pos)
             # Average positioning data recorded with Qualisys in given timeframe
-            self.last_position = PositionerValue.load_from_dict(
-                self.average_qualisys_data()
+            self._update_last_position(
+                PositionerValue.load_from_dict(self.average_qualisys_data())
             )
 
-        return self.last_position
+        return self._apply_filter(self.last_position)
 
     def subscribe_and_process(self):
         while not self.stop_flag.is_set():
             try:
                 # Receive the reply from the server for the first request
                 message = self.socket.recv_string()
-                self.last_position = json.loads(
-                    message, object_hook=PositionerValue.json_decoder
+                self._update_last_position(
+                    json.loads(message, object_hook=PositionerValue.json_decoder)
                 )
             except zmq.error.Again as e:
                 # Handle timeout error
